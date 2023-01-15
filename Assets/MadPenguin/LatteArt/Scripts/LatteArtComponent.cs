@@ -101,7 +101,6 @@ namespace MadPenguin.LatteArt
             
             // Calculate Local Point by Pivot and Anchor
             localPoint += _rectTransform.pivot * _rectTransform.sizeDelta;
-            Debug.Log(localPoint);
             
             // Collect Updated Point
             var updatedPoints = new List<Vector2Int>();
