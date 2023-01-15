@@ -27,6 +27,9 @@ namespace MadPenguin.LatteArt
         private int _cursorSize = 2;
         private int _score;
         
+        private Vector2 _prevMousePosition = Vector2.zero;
+        private bool _isMousePressed = false;
+        
         void Start()
         {
             _cursorRectTransform = _imageCursorBrush.GetComponent<RectTransform>();
@@ -38,13 +41,38 @@ namespace MadPenguin.LatteArt
 
         private void Update()
         {
-            
             var cursorPosition = Vector2Int.RoundToInt(Input.mousePosition * 240f / Screen.width);
             _cursorRectTransform.anchoredPosition = cursorPosition;
             
+            if (Input.GetMouseButtonUp(0))
+            {
+                _isMousePressed = false;
+                _prevMousePosition = Input.mousePosition;
+            }
+            if (Input.GetMouseButtonDown(0))
+            {
+                _isMousePressed = true;
+                _prevMousePosition = Input.mousePosition;
+            }
+            
             if (Input.GetMouseButton(0))
             {
-                _latteArtComponent.PaintLatte(Input.mousePosition, _cursorSize);
+                if (_isMousePressed)
+                {
+                    var prevPositionInt = Vector2Int.RoundToInt(_prevMousePosition);
+                    var currentPositionInt = Vector2Int.RoundToInt(Input.mousePosition);
+                
+                    var linePoints = Commons.GetPointsInLine(currentPositionInt, prevPositionInt);
+                    foreach (var point in linePoints)
+                    {
+                        _latteArtComponent.PaintLatte(point, _cursorSize); 
+                    }
+                    _prevMousePosition = Input.mousePosition;
+                }
+                else
+                {
+                    _latteArtComponent.PaintLatte(Input.mousePosition, _cursorSize); 
+                }
             }
         }
 
@@ -54,8 +82,9 @@ namespace MadPenguin.LatteArt
             var index = Random.Range(0, _latteArtDatas.Count - 1);
             _latteArtComponent.SetLatteArtData(_latteArtDatas[index]);
             
-            // Clear Score
+            // Initialize
             _score = 0;
+            _isMousePressed = false;
             _textScore.text = _score.ToString("n0");
             
             // Start Time Limit Coroutine
